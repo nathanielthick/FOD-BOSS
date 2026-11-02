@@ -91,13 +91,31 @@ h1 span{color:var(--yellow)}
 
 .pop{position:absolute;z-index:40;pointer-events:none;font-family:Bungee;font-size:22px;color:#fff;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.6);
   animation:pop .8s ease-out forwards;transform:translate(-50%,-50%)}
-.pop.miss{color:#ff8080;font-size:18px}.pop.gold{color:var(--yellow);font-size:28px}
+.pop.miss{color:#ff8080;font-size:18px}.pop.defect{color:#ff2a2a;font-size:22px;white-space:nowrap;text-shadow:0 2px 0 #000,0 0 12px rgba(255,0,0,.6)}.pop.near{color:#ffb020;font-size:20px;white-space:nowrap}
+.arena.fail{animation:fail .9s}
+@keyframes fail{0%,40%,80%{filter:none}20%,60%{filter:saturate(0) brightness(1.6) contrast(1.4)}10%,30%,50%,70%{transform:translate(5px,-3px)}15%,35%,55%,75%{transform:translate(-5px,3px)}}.pop.gold{color:var(--yellow);font-size:28px}
 @keyframes pop{to{transform:translate(-50%,-160%);opacity:0}}
 .banner{position:absolute;left:50%;top:44%;z-index:41;transform:translate(-50%,-50%) scale(.6);pointer-events:none;font-family:Bungee;
   font-size:clamp(26px,5vw,50px);color:var(--yellow);text-shadow:0 4px 0 #000;opacity:0;white-space:nowrap}
 .banner.show{animation:ban 1.1s ease-out}
 .banner.red{color:var(--red)}
 @keyframes ban{15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
+.buff{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:19;overflow:visible}
+.bosshud{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:42;display:none;align-items:center;gap:12px;
+  background:rgba(0,0,0,.6);padding:6px 12px;border-radius:12px;pointer-events:none}
+.arena.bossmode .bosshud{display:flex}
+.bosshud .lbl{white-space:nowrap;font-family:Bungee;font-size:13px;color:#fff;letter-spacing:.05em}
+.bhp{width:min(260px,32vw);height:12px;border-radius:6px;background:#3a0d0d;overflow:hidden;border:1px solid #000}
+.bhp i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff2a2a,#ff8a00);transition:width .2s}
+.lives{white-space:nowrap;font-size:18px;letter-spacing:2px;color:#ff3b5c;text-shadow:0 1px 0 #000}
+.lives .gone{color:#555}
+.arena.bossmode .grid{opacity:.35;transition:opacity .4s}
+.arena.bossmode{background-color:#4e3a3a}
+.arena.hurt .vignette{animation:hurt .45s}
+@keyframes hurt{0%{box-shadow:inset 0 0 0 999px rgba(255,0,0,.45)}100%{box-shadow:inset 0 0 0 0 rgba(255,0,0,0)}}
+.boss.flash img{filter:brightness(2.2) saturate(0) drop-shadow(0 0 12px #fff)}
+.stat.livesStat{display:none}.livesStat b{color:#ff3b5c}
+body.inboss .stat.livesStat{display:block}
 .timer{position:absolute;left:0;top:0;height:6px;background:var(--yellow);z-index:5;transition:width .2s linear}
 
 /* overlays */
@@ -151,6 +169,7 @@ button{font:inherit}
         <div class="stat" id="hComboBox"><small>Combo</small><b id="hCombo">0</b><div class="cbar"><i id="cbar"></i></div></div>
         <div class="stat mult" id="hMultBox"><small>Multiplier</small><b id="hMult">x1</b></div>
         <div class="stat"><small>Time</small><b id="hTime">60</b></div>
+        <div class="stat livesStat"><small>Lives</small><b id="hLives">❤❤❤</b></div>
         <div class="stat"><small>Your best</small><b id="hBest">–</b></div>
       </div>
     </div>
@@ -159,6 +178,8 @@ button{font:inherit}
       <div class="timer" id="timer" style="width:100%"></div>
       <div class="grid" id="grid"></div>
       <div class="vignette"></div>
+      <svg class="buff" id="buff" aria-hidden="true"></svg>
+      <div class="bosshud"><span class="lbl">BUFF BOSS</span><div class="bhp"><i id="bhpFill"></i></div><span class="lives" id="livesHud"></span></div>
       <div class="boss" id="boss">
         <div class="bubble" id="bubble"></div>
         <div class="head"><img src="boss.png" alt="FOD Boss"><i class="eye l"></i><i class="eye r"></i></div>
@@ -183,8 +204,8 @@ button{font:inherit}
         <div class="card">
           <h2>READY?</h2>
           <p>Debris pops out of the floor. <b>Smack it</b> with your hammer before it drops back in.</p>
-          <p>Hit in a row to build a combo. Every 5 hits raises your multiplier, up to <b>x5</b>. Miss a swing, or go 2 seconds without a hit, and it resets. Gold FOD is worth triple.</p>
-          <p>Reach a combo of <b>10</b> and the Boss starts to get angry…</p>
+          <p>Hit in a row to build a combo. Every 5 hits raises your multiplier, up to <b>x5</b>. Miss a swing, or go 2 seconds without a hit, and it resets. Gold FOD is worth triple. Miss too much in a row and you'll suffer a <b>dielectric failure</b>.</p>
+          <p>Reach a combo of <b>10</b> and the Boss starts to get angry… Hit <b>1,500 points</b> and he gets <b>BUFF</b>. Whack his fists before they slam the floor, or get knocked out!</p>
           <div class="thumbs" id="thumbs"></div>
           <div><input id="nameIn" class="name" maxlength="20" placeholder="Your name" autocomplete="nickname"></div>
           <button class="go" id="startBtn">START · 60s</button>
@@ -193,7 +214,7 @@ button{font:inherit}
       </div>
       <div class="overlay" id="endScreen" hidden>
         <div class="card">
-          <h2>FLOOR CLEAR</h2>
+          <h2 id="eTitle">FLOOR CLEAR</h2>
           <div class="big" id="eScore">0</div>
           <div class="rows">
             <div><b id="eCombo">0</b><small>Best combo</small></div>
@@ -258,13 +279,17 @@ function snd(type){
     else if (type==='gold'){ o.type='triangle'; o.frequency.setValueAtTime(660,t); o.frequency.setValueAtTime(990,t+.08); g.gain.setValueAtTime(.2,t); g.gain.exponentialRampToValueAtTime(.001,t+.25); o.start(t); o.stop(t+.26); }
     else if (type==='whiff'){ o.type='sawtooth'; o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(70,t+.1); g.gain.setValueAtTime(.06,t); g.gain.exponentialRampToValueAtTime(.001,t+.12); o.start(t); o.stop(t+.13); }
     else if (type==='break'){ o.type='sine'; o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(90,t+.35); g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.4); o.start(t); o.stop(t+.4); }
+    else if (type==='slam'){ o.type='sine'; o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(35,t+.3); g.gain.setValueAtTime(.45,t); g.gain.exponentialRampToValueAtTime(.001,t+.35); o.start(t); o.stop(t+.36); }
+    else if (type==='roar'){ o.type='sawtooth'; o.frequency.setValueAtTime(90,t); o.frequency.linearRampToValueAtTime(160,t+.4); o.frequency.exponentialRampToValueAtTime(50,t+1.1); g.gain.setValueAtTime(.001,t); g.gain.linearRampToValueAtTime(.2,t+.15); g.gain.exponentialRampToValueAtTime(.001,t+1.2); o.start(t); o.stop(t+1.2); }
+    else if (type==='punch'){ o.type='square'; o.frequency.setValueAtTime(320,t); o.frequency.exponentialRampToValueAtTime(80,t+.1); g.gain.setValueAtTime(.3,t); g.gain.exponentialRampToValueAtTime(.001,t+.14); o.start(t); o.stop(t+.15); }
+    else if (type==='win'){ o.type='triangle'; [523,659,784,1047].forEach((f,i)=>o.frequency.setValueAtTime(f,t+i*.12)); g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.8); o.start(t); o.stop(t+.8); }
     else if (type==='end'){ o.type='square'; [523,392,262].forEach((f,i)=>o.frequency.setValueAtTime(f,t+i*.15)); g.gain.setValueAtTime(.12,t); g.gain.exponentialRampToValueAtTime(.001,t+.6); o.start(t); o.stop(t+.6); }
   }catch(e){}
 }
 $('muteBtn').onclick = () => { muted = !muted; $('muteBtn').textContent = 'Sound: ' + (muted?'off':'on'); };
 
 // ---------- pointer, hammer, boss ----------
-let px = -200, py = -200, bx = 300, by = 200, inside = false;
+let px = -200, py = -200, bx = 300, by = 200, bs = 1, inside = false;
 function local(e){ const r = arena.getBoundingClientRect(); return [e.clientX - r.left - 10, e.clientY - r.top - 10]; }
 arena.addEventListener('pointermove', e => { [px,py] = local(e); inside = true; });
 arena.addEventListener('pointerleave', () => { inside = false; });
@@ -273,6 +298,8 @@ function frame(){
   hammer.style.left = px+'px'; hammer.style.top = py+'px';
   cross.style.left = px+'px'; cross.style.top = py+'px';
   hammer.style.opacity = cross.style.opacity = inside ? '' : '0';
+  if (stage){ bossFrame(W, H, bw, bh); requestAnimationFrame(frame); return; }
+  bs += (1 - bs) * 0.12;
   // boss chases a point trailing beside the hammer
   const side = px + 80 + bw < W ? px + 80 : px - 80 - bw;
   const tx = Math.min(Math.max(side, 0), W - bw), ty = Math.min(Math.max(py - bh*0.15, 0), H - bh);
@@ -280,7 +307,7 @@ function frame(){
   const dx = tx - bx, dy = ty - by; bx += dx*speed; by += dy*speed;
   const tilt = Math.max(-18, Math.min(18, dx*0.12));
   const sc = combo >= FRENZY ? 1 + Math.min(combo - FRENZY, 15)*0.02 : 1;
-  boss.style.transform = `translate(${bx}px,${by}px) rotate(${tilt}deg) scale(${sc})`;
+  boss.style.transform = `translate(${bx}px,${by}px) rotate(${tilt}deg) scale(${sc*bs})`;
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -288,10 +315,22 @@ requestAnimationFrame(frame);
 let bubbleT = 0;
 function say(msg, ms=1300){ const b=$('bubble'); b.textContent = msg; b.classList.add('show'); clearTimeout(bubbleT); bubbleT = setTimeout(()=>b.classList.remove('show'), ms); }
 function banner(txt, red){ const b=$('banner'); b.textContent=txt; b.className='banner'+(red?' red':''); void b.offsetWidth; b.classList.add('show'); }
-function pop(x,y,txt,cls=''){ const d=document.createElement('div'); d.className='pop '+cls; d.textContent=txt; d.style.left=x+'px'; d.style.top=y+'px'; arena.appendChild(d); setTimeout(()=>d.remove(),800); }
+const MISS_WORDS = ['WIRE MISSING','SHORT','OPEN'];
+function missPop(){ pop(px, py, pick(MISS_WORDS), 'defect'); }
+function pop(x,y,txt,cls=''){ const m = Math.min(110, arena.clientWidth/2); x = Math.max(m, Math.min(arena.clientWidth - m, x)); y = Math.max(30, y); const d=document.createElement('div'); d.className='pop '+cls; d.textContent=txt; d.style.left=x+'px'; d.style.top=y+'px'; arena.appendChild(d); setTimeout(()=>d.remove(),800); }
 
 // ---------- game state ----------
-let comboUntil = 0;
+let comboUntil = 0, bad = 0, failures = 0;
+// misses and escaped FOD in a row since the last hit; 5 in a row = dielectric failure
+function badStreak(){
+  bad++;
+  if (bad >= 5){
+    bad = 0; failures++;
+    banner('DIELECTRIC FAILURE!', true); snd('break');
+    arena.classList.remove('fail'); void arena.offsetWidth; arena.classList.add('fail');
+    say(pick(['Total breakdown!','Zero resistance. Pathetic.','Insulation? Never heard of it.','MWAHAHA!']), 1800);
+  }
+}
 let running = false, score = 0, combo = 0, bestCombo = 0, hits = 0, swings = 0, tLeft = ROUND, tStart = 0, spawnT = 0, tickT = 0;
 const mult = () => Math.min(5, 1 + Math.floor(combo/5));
 
@@ -311,8 +350,239 @@ const TAUNTS_IDLE = ['Catch me if you can','More debris coming…','Watch your s
 const TAUNTS_FRENZY = ['…you\'re making me ANGRY','STOP THAT','MY BEAUTIFUL FOD!','GRRRR'];
 const pick = a => a[Math.floor(Math.random()*a.length)];
 
+
+// ================= BOSS STAGE =================
+// At BOSS_SCORE points (or a BOSS_COMBO streak) the FOD Boss bulks up, grows arms and
+// slams his fists at the floor. Whack a fist before it lands to damage him; let it land
+// and you lose a life. Lose all lives = knocked out (round over). The round clock pauses.
+const BOSS_SCORE = 1500, BOSS_COMBO = 25, BOSS_HP = 12, LIVES = 3, BOSS_TIME = 30000;
+const buff = $('buff'), SVGNS = 'http://www.w3.org/2000/svg';
+let stage = null, bossDone = false, bossBeaten = false, knockedOut = false;
+
+function svgEl(tag, attrs, parent){ const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent||buff).appendChild(e); return e; }
+function clearBuff(){
+  buff.textContent = ''; arena.classList.remove('bossmode'); document.body.classList.remove('inboss');
+  boss.classList.remove('flash');
+}
+function buildBuff(){
+  buff.textContent = '';
+  const d = svgEl('defs', {});
+  d.innerHTML = '<radialGradient id="skin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f6c8a8"/><stop offset=".6" stop-color="#e0a07c"/><stop offset="1" stop-color="#b8735a"/></radialGradient>' +
+    '<radialGradient id="shadowG"><stop offset="0" stop-color="rgba(255,0,0,.65)"/><stop offset=".6" stop-color="rgba(255,0,0,.25)"/><stop offset="1" stop-color="rgba(255,0,0,0)"/></radialGradient>';
+  const g = { shadows: svgEl('g', {}), torso: svgEl('g', {}), arms: [] };
+  g.neck = svgEl('rect', { fill:'url(#skin)', stroke:'#7a4a36', 'stroke-width':3, rx:12 }, g.torso);
+  g.body = svgEl('path', { fill:'#17181b', stroke:'#000', 'stroke-width':4 }, g.torso);
+  g.pecs = svgEl('path', { fill:'none', stroke:'#3a3d44', 'stroke-width':4, 'stroke-linecap':'round' }, g.torso);
+  g.print = svgEl('path', { fill:'#e9e9e9', opacity:.85 }, g.torso);   // shirt print, like the real one
+  for (let i = 0; i < 2; i++){
+    const a = svgEl('g', {});
+    const sh = svgEl('ellipse', { fill:'url(#shadowG)' }, g.shadows);
+    const upper = svgEl('path', { fill:'none', stroke:'#7a4a36', 'stroke-linecap':'round', 'stroke-linejoin':'round' }, a);
+    const upperIn = svgEl('path', { fill:'none', stroke:'url(#skin)', 'stroke-linecap':'round', 'stroke-linejoin':'round' }, a);
+    const bicep = svgEl('ellipse', { fill:'url(#skin)', stroke:'#7a4a36', 'stroke-width':3 }, a);
+    const sleeve = svgEl('ellipse', { fill:'#17181b', stroke:'#000', 'stroke-width':3 }, a);
+    const fist = svgEl('g', {}, a);
+    const glow = svgEl('circle', { fill:'rgba(255,40,40,.0)' }, fist);
+    const ball = svgEl('circle', { fill:'url(#skin)', stroke:'#7a4a36', 'stroke-width':3.5 }, fist);
+    const knuckles = svgEl('path', { fill:'none', stroke:'#8a5640', 'stroke-width':3, 'stroke-linecap':'round' }, fist);
+    g.arms.push({ a, sh, upper, upperIn, bicep, sleeve, fist, glow, ball, knuckles });
+  }
+  return g;
+}
+
+function startBoss(){
+  bossDone = true;
+  clearTimeout(spawnT);
+  holes.forEach(h => { clearTimeout(h.timer); h.up = false; h.el.classList.remove('up'); });
+  const now = performance.now();
+  stage = { phase:'intro', t0:now, pausedAt:now, hp:BOSS_HP, lives:LIVES, grow:0, g:buildBuff(), nextAttack: now + 2600,
+    arms:[0,1].map(i => ({ side: i ? 1 : -1, state:'rest', t:now, x:0, y:0, tx:0, ty:0, aimDur:0, cool: now + 2600 + i*900 })) };
+  arena.classList.add('bossmode'); document.body.classList.add('inboss');
+  banner('THE FOD BOSS GOT BUFF!', true); snd('roar');
+  say('NOW I\'M ANGRY!', 2000);
+  bossHud();
+}
+
+function bossHud(){
+  if (!stage) return;
+  $('bhpFill').style.width = (stage.hp / BOSS_HP * 100) + '%';
+  const hearts = '❤'.repeat(stage.lives) + '<span class="gone">' + '❤'.repeat(LIVES - stage.lives) + '</span>';
+  $('livesHud').innerHTML = hearts; $('hLives').innerHTML = hearts;
+}
+
+function finishBoss(result){
+  const st = stage; if (!st) return;
+  const now = performance.now();
+  if (result === 'win'){
+    bossBeaten = true;
+    const bonus = 1000 + st.lives * 250;
+    score += bonus; hud();
+    banner('BOSS DEFEATED! +' + bonus.toLocaleString()); snd('win');
+    say('Nooo… my gains…', 2200);
+  } else if (result === 'tired'){
+    banner('THE BOSS RAN OUT OF STEAM'); say('I\'ll… be back… *wheeze*', 2000);
+  }
+  if (result === 'ko'){
+    knockedOut = true; st.phase = 'ko';
+    banner('KNOCKED OUT!', true); snd('end');
+    setTimeout(() => { if (running) end(); }, 1300);
+    return;
+  }
+  st.phase = 'outro'; st.t0 = now;
+  setTimeout(() => {
+    if (stage !== st) return;
+    tStart += performance.now() - st.pausedAt;   // give back the time the fight took
+    stage = null; clearBuff(); hud();
+    if (running) spawnT = setTimeout(spawn, 400);
+  }, 1400);
+}
+
+// geometry helpers (arena px)
+function shoulders(W, H){
+  const S = 1.75, bw = boss.offsetWidth, bh = boss.offsetHeight;
+  const hx = W/2, hy = H*0.2;
+  const neckY = hy + bh*S*0.42, torsoW = Math.min(W*0.44, bw*S*1.55);
+  return { S, hx, hy, neckY, torsoW, ls:[hx - torsoW*0.46, neckY + 22], rs:[hx + torsoW*0.46, neckY + 22] };
+}
+function pickTarget(W, H){
+  const near = Math.random() < 0.55 && inside;
+  let x = near ? px + (Math.random()-.5)*160 : W*(0.12 + Math.random()*0.76);
+  let y = near ? py + (Math.random()-.5)*120 : H*(0.5 + Math.random()*0.42);
+  return [Math.max(W*0.1, Math.min(W*0.9, x)), Math.max(H*0.45, Math.min(H*0.93, y))];
+}
+
+function bossFrame(W, H, bw, bh){
+  const st = stage, now = performance.now(), geo = shoulders(W, H);
+  buff.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  // grow in during the intro, shrink away in the outro
+  const target = st.phase === 'outro' ? 0 : 1;
+  st.grow += (target - st.grow) * (st.phase === 'intro' ? 0.05 : 0.12);
+  const G = st.grow, S = 1 + (geo.S - 1) * G;
+  if (st.phase === 'intro' && now - st.t0 > 2400){ st.phase = 'fight'; st.fightStart = now; say('COME HERE!'); }
+  // head: centre top, bobbing
+  const bob = Math.sin(now/260) * 4 * G;
+  bx += (geo.hx - bw/2 - bx) * 0.15; by += (geo.hy - bh/2 + bob - by) * 0.15;
+  boss.style.transform = `translate(${bx}px,${by}px) scale(${S})`;
+  boss.classList.add('glow'); boss.style.setProperty('--glow', 1);
+
+  const g = st.g, tw = geo.torsoW * G, ny = geo.neckY + bob, cx = geo.hx;
+  // neck + torso (black tee) + pecs + print
+  g.neck.setAttribute('x', cx - 30*G); g.neck.setAttribute('y', ny - 34*G); g.neck.setAttribute('width', 60*G); g.neck.setAttribute('height', 50*G);
+  const th = H*0.36*G;
+  g.body.setAttribute('d', `M${cx - tw/2},${ny+10} Q${cx},${ny-12*G} ${cx + tw/2},${ny+10} L${cx + tw*0.32},${ny+th} Q${cx},${ny+th+18*G} ${cx - tw*0.32},${ny+th} Z`);
+  g.pecs.setAttribute('d', `M${cx - tw*0.36},${ny+th*0.42} Q${cx - tw*0.18},${ny+th*0.58} ${cx},${ny+th*0.4} Q${cx + tw*0.18},${ny+th*0.58} ${cx + tw*0.36},${ny+th*0.42} M${cx},${ny+th*0.42} L${cx},${ny+th*0.85}`);
+  g.print.setAttribute('d', `M${cx},${ny+th*0.18} l${-tw*0.22},${th*0.12} l${tw*0.12},${th*0.02} l${-tw*0.08},${th*0.1} l${tw*0.18},${-th*0.06} Z M${cx},${ny+th*0.18} l${tw*0.22},${th*0.12} l${-tw*0.12},${th*0.02} l${tw*0.08},${th*0.1} l${-tw*0.18},${-th*0.06} Z`);
+
+  // ---- arm AI ----
+  const dmg = 1 - st.hp / BOSS_HP;                 // 0 → 1 as he gets weaker, he gets faster
+  const aimTime = 1450 - 650*dmg;                  // telegraph time before the fist lands
+  if (st.phase === 'fight'){
+    if (now - st.fightStart > BOSS_TIME) finishBoss('tired');
+    const attacking = st.arms.filter(a => a.state === 'aim' || a.state === 'slam').length;
+    const maxAtk = dmg > 0.5 ? 2 : 1;
+    for (const a of st.arms){
+      if (a.state === 'rest' && now > a.cool && attacking < maxAtk && stage && stage.phase === 'fight'){
+        [a.tx, a.ty] = pickTarget(W, H); a.state = 'aim'; a.t = now; a.aimDur = aimTime * (0.85 + Math.random()*0.3);
+        break;
+      }
+    }
+  }
+  st.arms.forEach((a, i) => {
+    const sh = i ? [geo.rs[0], geo.rs[1] + bob] : [geo.ls[0], geo.ls[1] + bob];
+    const shX = cx + (sh[0] - cx) * G, shY = sh[1];
+    const restX = shX + a.side * 70 * G, restY = shY + 120 * G + Math.sin(now/300 + i*2) * 8;
+    let fx, fy, fistR = 34, glowA = 0, shadowA = 0, shadowR = 0;
+    const el = now - a.t;
+    if (a.state === 'rest'){ fx = restX; fy = restY; }
+    else if (a.state === 'aim'){
+      const p = Math.min(1, el / a.aimDur), e = 1 - Math.pow(1 - Math.min(1, p*1.6), 3);
+      fx = restX + (a.tx - restX) * e; fy = restY + (a.ty - 90 - restY) * e - Math.sin(p*Math.PI)*30;
+      glowA = 0.25 + 0.55 * p; shadowA = p; shadowR = 30 + 40 * p;
+      fistR = 34 + 10 * p;
+      if (p >= 1){ a.state = 'slam'; a.t = now; }
+    } else if (a.state === 'slam'){
+      const p = Math.min(1, el / 110);
+      fx = a.tx; fy = a.ty - 90 + 90 * p; glowA = 0.8; shadowA = 1; shadowR = 70; fistR = 44;
+      if (p >= 1){ landFist(a); fx = a.tx; fy = a.ty; }
+    } else if (a.state === 'landed'){
+      fx = a.tx; fy = a.ty; fistR = 44; if (el > 350){ a.state = 'recoil'; a.t = now; a.fromX = fx; a.fromY = fy; }
+    } else if (a.state === 'recoil'){
+      const p = Math.min(1, el / 380), e = 1 - Math.pow(1-p, 2);
+      fx = a.fromX + (restX - a.fromX) * e; fy = a.fromY + (restY - a.fromY) * e;
+      if (p >= 1){ a.state = 'rest'; a.cool = now + 500 + Math.random() * (900 - 500*dmg); }
+    }
+    a.x = fx; a.y = fy; a.r = fistR;
+    drawArm(st.g.arms[i], shX, shY, fx, fy, fistR * G, a.side, G, glowA, shadowA, shadowR, a);
+  });
+}
+
+function drawArm(v, sx, sy, fx, fy, fr, side, G, glowA, shadowA, shadowR, a){
+  // two-bone arm with the elbow bending outward
+  const dx = fx - sx, dy = fy - sy, d = Math.max(1, Math.hypot(dx, dy));
+  const L = Math.max(95*G, d/2 * 1.08);
+  const h = Math.sqrt(Math.max(0, L*L - (d/2)*(d/2)));
+  const mx = sx + dx/2, my = sy + dy/2, nx = -dy/d, ny = dx/d;
+  const flip = (nx * side) < 0 ? -1 : 1;
+  const ex = mx + nx * h * flip, ey = my + ny * h * flip;
+  const w = 54 * G;
+  const path = `M${sx},${sy} L${ex},${ey} L${fx},${fy}`;
+  v.upper.setAttribute('d', path); v.upper.setAttribute('stroke-width', w + 7);
+  v.upperIn.setAttribute('d', path); v.upperIn.setAttribute('stroke-width', w);
+  // flexing bicep on the upper arm
+  const bxm = sx + (ex - sx)*0.55, bym = sy + (ey - sy)*0.55, ang = Math.atan2(ey - sy, ex - sx) * 180/Math.PI;
+  const flex = 1 + 0.12 * Math.sin(performance.now()/180);
+  v.bicep.setAttribute('cx', bxm + nx*flip*8*G); v.bicep.setAttribute('cy', bym + ny*flip*8*G);
+  v.bicep.setAttribute('rx', Math.hypot(ex-sx, ey-sy)*0.42); v.bicep.setAttribute('ry', w*0.95*flex);
+  v.bicep.setAttribute('transform', `rotate(${ang} ${bxm + nx*flip*8*G} ${bym + ny*flip*8*G})`);
+  v.sleeve.setAttribute('cx', sx); v.sleeve.setAttribute('cy', sy); v.sleeve.setAttribute('rx', w*0.85); v.sleeve.setAttribute('ry', w*0.7);
+  v.sleeve.setAttribute('transform', `rotate(${ang} ${sx} ${sy})`);
+  // fist
+  v.ball.setAttribute('cx', fx); v.ball.setAttribute('cy', fy); v.ball.setAttribute('r', fr);
+  v.glow.setAttribute('cx', fx); v.glow.setAttribute('cy', fy); v.glow.setAttribute('r', fr * 1.6);
+  v.glow.setAttribute('fill', `rgba(255,30,30,${glowA * 0.55})`);
+  const k = fr * 0.55;
+  v.knuckles.setAttribute('d', `M${fx-k},${fy-k*0.2} q${k*0.33},${-k*0.5} ${k*0.66},0 q${k*0.33},${-k*0.5} ${k*0.66},0 q${k*0.33},${-k*0.5} ${k*0.66},0`);
+  // red target shadow on the floor
+  v.sh.setAttribute('cx', a.tx); v.sh.setAttribute('cy', a.ty + 12); v.sh.setAttribute('rx', shadowR); v.sh.setAttribute('ry', shadowR * 0.45);
+  v.sh.setAttribute('opacity', shadowA);
+}
+
+function landFist(a){
+  a.state = 'landed'; a.t = performance.now();
+  snd('slam'); arena.classList.remove('shake'); void arena.offsetWidth; arena.classList.add('shake');
+  const st = stage; if (!st) return;
+  // did it hit the player? If the hammer is within reach of the impact, yes. If the
+  // player wasn't anywhere near, the slam still costs a life: you HAVE to whack the fists.
+  st.lives--; bossHud();
+  arena.classList.remove('hurt'); void arena.offsetWidth; arena.classList.add('hurt');
+  pop(a.tx, a.ty - 40, 'OUCH!', 'miss');
+  breakCombo('slam');
+  say(pick(['SMASH!','Feel the gains!','Too slow, tiny hammer!','HA!']));
+  if (st.lives <= 0) finishBoss('ko');
+}
+
+function bossSwing(){
+  const st = stage;
+  if (!st || st.phase !== 'fight'){ return; }
+  let hitArm = null;
+  for (const a of st.arms){
+    if ((a.state === 'aim' || a.state === 'slam') && Math.hypot(px - a.x, py - a.y) <= a.r * 1.25){ hitArm = a; break; }
+  }
+  if (!hitArm){ snd('whiff'); missPop(); breakCombo('whiff'); return; }
+  // knocked the fist away
+  hitArm.state = 'recoil'; hitArm.t = performance.now(); hitArm.fromX = hitArm.x; hitArm.fromY = hitArm.y;
+  st.hp--; hits++; combo++; bad = 0; comboUntil = performance.now() + WINDOW; bestCombo = Math.max(bestCombo, combo);
+  const pts = 50 * mult(); score += pts;
+  snd('punch'); pop(px, py - 20, '+' + pts + (mult()>1 ? '  x'+mult() : ''), 'gold');
+  boss.classList.remove('flash'); void boss.offsetWidth; boss.classList.add('flash'); setTimeout(() => boss.classList.remove('flash'), 120);
+  if (Math.random() < .4) say(pick(['OW!','My knuckles!','Lucky shot!','GRRR!','Stop that!']));
+  hud(); bossHud();
+  if (st.hp <= 0) finishBoss('win');
+  else if (st.hp === Math.floor(BOSS_HP/2)) banner('HE\'S USING BOTH ARMS!', true);
+}
+
 function breakCombo(reason){
-  if (combo >= 5){ snd('break'); banner('COMBO LOST', true); }
+  if (combo >= 5){ snd('break'); banner('DISPOSITION', true); }
   if (combo >= FRENZY) say('Heh. Back to normal.');
   else if (reason==='timeout' && combo >= 3) say('Too slow!');
   combo = 0; hud();
@@ -330,7 +600,7 @@ function spawn(){
     h.el.classList.remove('hit'); h.el.classList.toggle('gold', h.gold);
     h.up = true; h.el.classList.add('up');
     const stay = (1250 - 600*p) * (h.gold ? .8 : 1);
-    h.timer = setTimeout(() => { if (h.up){ h.up=false; h.el.classList.remove('up'); if (running && Math.random()<.35) say(pick(TAUNTS_MISS)); } }, stay);
+    h.timer = setTimeout(() => { if (h.up){ h.up=false; h.el.classList.remove('up'); if (running){ badStreak(); if (Math.random()<.35) say(pick(TAUNTS_MISS)); } } }, stay);
   }
   spawnT = setTimeout(spawn, 700 - 380*p + Math.random()*220);
 }
@@ -340,17 +610,26 @@ function swing(e){
   [px,py] = local(e); inside = true;
   hammer.classList.add('swing'); setTimeout(()=>hammer.classList.remove('swing'), 90);
   swings++;
+  if (stage){ bossSwing(); return; }
   const ar = arena.getBoundingClientRect();
-  let target = null;
+  let target = null, nearest = Infinity;
   for (const h of holes){
     if (!h.up) continue;
     const r = h.fod.getBoundingClientRect();
     const cx = r.left + r.width/2, cy = r.top + r.height/2, rad = r.width*0.56;
-    if (Math.hypot(e.clientX - cx, e.clientY - cy) <= rad){ target = h; break; }
+    const ratio = Math.hypot(e.clientX - cx, e.clientY - cy) / rad;
+    if (ratio <= 1){ target = h; break; }
+    nearest = Math.min(nearest, ratio);
   }
-  if (!target){ snd('whiff'); pop(px,py,'MISS','miss'); breakCombo('whiff'); return; }
+  if (!target){
+    snd('whiff');
+    const close = nearest <= 1.9;   // swung just outside an exposed FOD
+    missPop();
+    if (close && Math.random() < .4) say('Ooh, so close!');
+    breakCombo('whiff'); badStreak(); return;
+  }
   clearTimeout(target.timer); target.up = false; target.el.classList.remove('up'); target.el.classList.add('hit');
-  hits++; combo++; comboUntil = performance.now() + WINDOW; bestCombo = Math.max(bestCombo, combo);
+  bad = 0; hits++; combo++; comboUntil = performance.now() + WINDOW; bestCombo = Math.max(bestCombo, combo);
   const pts = (target.gold ? 30 : 10) * mult();
   score += pts;
   snd(target.gold ? 'gold' : 'hit');
@@ -363,10 +642,12 @@ function swing(e){
   else if (combo > 20 && combo % 10 === 0) banner(combo + ' STREAK!', true);
   else if (combo > FRENZY && Math.random() < .15) say(pick(TAUNTS_FRENZY));
   hud();
+  if (!bossDone && (score >= BOSS_SCORE || combo >= BOSS_COMBO)) startBoss();
 }
 arena.addEventListener('pointerdown', e => { if (e.target.closest('.overlay')) return; e.preventDefault(); swing(e); });
 
 function tick(){
+  if (stage){ tickT = setTimeout(tick, 50); return; }
   tLeft = Math.max(0, ROUND - (performance.now() - tStart)/1000);
   $('hTime').textContent = Math.ceil(tLeft);
   $('timer').style.width = (tLeft/ROUND*100) + '%';
@@ -379,19 +660,26 @@ function tick(){
 }
 
 function start(){
-  score = 0; combo = 0; bestCombo = 0; hits = 0; swings = 0; tStart = performance.now(); running = true;
+  bad = 0; failures = 0; bossDone = false; bossBeaten = false; knockedOut = false; stage = null; clearBuff(); score = 0; combo = 0; bestCombo = 0; hits = 0; swings = 0; tStart = performance.now(); running = true;
   holes.forEach(h => { clearTimeout(h.timer); h.up=false; h.el.classList.remove('up','hit','gold'); });
   $('startScreen').hidden = true; $('endScreen').hidden = true;
   hud(); say('Bring it on!'); tick(); spawnT = setTimeout(spawn, 500);
 }
 function end(){
   running = false; clearTimeout(spawnT); clearTimeout(tickT);
+  if (stage){ stage = null; } clearBuff();
   holes.forEach(h => { clearTimeout(h.timer); h.up=false; h.el.classList.remove('up'); });
   combo = 0; hud(); $('cbar').style.width='0'; snd('end');
   $('eScore').textContent = score.toLocaleString();
   $('eCombo').textContent = bestCombo; $('eHits').textContent = hits;
   $('eAcc').textContent = swings ? Math.round(hits/swings*100) + '%' : '0%';
+  const acc = swings ? hits/swings : 0, failed = score < 300 || (swings >= 8 && acc < 0.4) || failures >= 3;
+  $('eTitle').textContent = (knockedOut || failed) ? 'REWORK' : bossBeaten ? 'BOSS SLAYER' : 'FLOOR CLEAR';
+  $('eTitle').style.color = (knockedOut || failed) ? 'var(--red)' : bossBeaten ? 'var(--yellow)' : '';
   $('eMsg').textContent = score >= 2500 ? 'The FOD Boss has been humbled.' : score >= 1200 ? 'Solid sweep. The Boss is nervous.' : 'The Boss is still laughing. Go again?';
+  if (failed) $('eMsg').textContent = 'Insulation breakdown. The FOD Boss owns this floor.';
+  if (bossBeaten && !failed) $('eMsg').textContent = 'You out-muscled the Buff FOD Boss. Legendary.';
+  if (knockedOut) $('eMsg').textContent = 'The Buff FOD Boss flattened you. Whack those fists next time!';
   $('endScreen').hidden = false;
   say(score >= 1200 ? 'I\'ll be back…' : 'Mwahaha!', 2500);
   save(score, bestCombo, hits);

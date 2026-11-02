@@ -36,6 +36,14 @@ A whack-a-mole game about **FOD (Foreign Object Debris)**. The FOD Boss is scatt
 - **WIRE MISSING:** you swung just outside a piece of FOD. So close, but it still breaks your combo.
 - **DIELECTRIC FAILURE:** 5 misses in a row (missed swings or escaped FOD). The floor shorts out and the Boss laughs at you. A bad enough round ends with a DIELECTRIC FAILURE instead of FLOOR CLEAR.
 
+### 💪 Boss stage
+Reach **1,500 points** (or a **25-hit combo**) and the FOD Boss **gets BUFF**. He takes over the floor, grows huge arms and starts slamming his fists down.
+- A **red shadow** shows where each fist will land. **Whack the fist** before it hits to knock it away and damage him (**50 × multiplier** per hit).
+- Every fist that lands costs you a **life ❤**. Lose all 3 and you're **KNOCKED OUT**, and the round ends.
+- Halfway through, he starts **using both arms at once**.
+- Beat him (12 hits) for a **1,000-point bonus + 250 per life left**. If you hold out for 30 seconds he runs out of steam and retreats.
+- The round clock **pauses** during the fight, and the boss only appears once per round.
+
 ---
 
 ## Project files
